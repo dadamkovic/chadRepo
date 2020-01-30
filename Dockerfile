@@ -1,5 +1,3 @@
-FROM python:3
+FROM maven:3.6.3-jdk-11-openj9
 
-ADD hello_docker.py /
-
-CMD [ "python", "./hello_docker.py"]
+COPY settings.xml /usr/share/maven/ref
