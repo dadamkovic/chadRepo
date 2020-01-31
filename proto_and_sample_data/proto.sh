@@ -39,6 +39,7 @@ do
 done
 
 curl -u admin:admin "$api" |
+	jq . |  # prettier format
 	tee "$repo.sonar_data.json" |
 	jq -r '
 [.issues[] | {
