@@ -69,15 +69,15 @@ class GitRepo():
         commit_info['commiter_timezone'] = self.commit_handle.committer_tz_offset/3600
         commit_info['branches'] = [n.name.split('/')[-1] for n in self.filled_repo.remotes.origin.refs]
         commit_info['in_main_branch'] = 'True' if self.filled_repo.active_branch.name == 'master' else 'False'
-        commit_info['merge'] = []
         commit_info['parents'] = [p.hexsha for p in self.commit_handle.parents]
+        commit_info['merge'] = "TRUE" if len(commit_info['parents'])>1 else "FALSE"
         commit_info['branches'].remove('HEAD')
         return commit_info
     
     ## @param[in] branch Name of the branch that you want to switch to
     #  @see get_branches() method
     def change_branch(self,branch):
-        if(branch not in self._get_branches()):
+        if(branch not in self.get_branches()):
             return False
         else:
             self.filled_repo.git.checkout(branch)
