@@ -1,1 +1,1 @@
-Branch with GitRepo class funcitonality.
+Alpha version of the Spint 1 software.
