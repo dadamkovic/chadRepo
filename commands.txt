@@ -1,0 +1,5 @@
+// Start SonarQube server
+docker run --name sonarqube -p 9000:9000 sonarqube
+
+// Start SonarScanner for Maven
+docker run -it --rm --network host --name sonarmaven -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven sonar_maven mvn clean verify sonar:sonar
