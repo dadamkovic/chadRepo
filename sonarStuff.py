@@ -8,9 +8,10 @@ class Sonar:
 
     ##  The Constructor
     def __init__(self):
-        self.client = docker.from_env()
+        self.dockerClient = docker.from_env()
         self.sonarQubeContainer = None
         self.sonarQubeRunning = False
+        self.sonarScannerContainer = None
 
     ##  startSonarQube
     #   @brief Method for starting sonarQube docker container
@@ -19,7 +20,7 @@ class Sonar:
     def startSonarQube(self):
         print("SonarQube is starting..")
         if self.isSonarQubeRunning() is False:
-            self.sonarQubeContainer = self.client.containers.run(
+            self.sonarQubeContainer = self.dockerClient.containers.run(
                 "sonarqube",
                 detach=True,
                 name="sonarqube",
@@ -54,8 +55,35 @@ class Sonar:
         except requests.ConnectionError:
             return False
 
+    ##  buildMavenProject
+    #   @brief builds the Maven project
+    def buildMavenProject(self):
+        self.sonarScannerContainer = self.dockerClient.run(
+            "vesakoskela/sonar-scanner-maven",
+            "mvn",
+            "clean",
+            "verify",
+            network_mode="host",
+            tty=True,
+            auto_remove=True,
+            volumes={'$(pwd)': {'bind': ':/usr/src/mymaven', 'mode': 'rw'}},
+            working_dir="/usr/src/mymaven"
+        )
 
-"""
+    def runSonarScanner(self):
+        self.sonarScannerContainer = self.dockerClient.run(
+            "vesakoskela/sonar-scanner-maven",
+            "mvn",
+            "sonar:sonar",
+            network_mode="host",
+            tty=True,
+            auto_remove=True,
+            volumes={'$(pwd)': {'bind': ':/usr/src/mymaven', 'mode': 'rw'}},
+            working_dir="/usr/src/mymaven"
+        )
+
+
+
 sonar = Sonar()
 sonar.startSonarQube()
 while sonar.isSonarQubeRunning() is False:
@@ -63,4 +91,3 @@ while sonar.isSonarQubeRunning() is False:
     time.sleep(2)
 print("SonarQube is Up!")
 sonar.stopSonarQube()
-"""
