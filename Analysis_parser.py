@@ -1,9 +1,8 @@
-###############################################
-# NOTE: The SonarQube doesn't give resolution #
-###############################################
+#################################################################
+# NOTE: The SonarQube doesn't give resolution in our proto file #
+#################################################################
 from pandas import read_json, DataFrame
 from json import load
-from math import isnan
 
 ## analysisParse
 #  @brief Makes a CSV file from the JSON
