@@ -83,11 +83,12 @@ class Sonar:
         )
 
 
-
-sonar = Sonar()
-sonar.startSonarQube()
-while sonar.isSonarQubeRunning() is False:
-    print(".", sep="", end="", flush=True)
-    time.sleep(2)
-print("SonarQube is Up!")
-sonar.stopSonarQube()
+if __name__ == "__main__":
+	sonar = Sonar()
+	sonar.startSonarQube()
+	while sonar.isSonarQubeRunning() is False:
+		print(".", sep="", end="", flush=True)
+		time.sleep(2)
+	print("SonarQube is Up!")
+	input("Press any key to STOP")
+	#sonar.stopSonarQube()
