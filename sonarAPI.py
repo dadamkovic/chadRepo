@@ -4,17 +4,29 @@ from itertools import count
 
 
 class API:
-    def __init__(self):
-        self.auth = 'admin', 'admin'
-        self.url = 'http://127.0.0.1:9000'
+    def __init__(self, url='http://127.0.0.1:9000', auth=('admin', 'admin')):
+        self.url = url
+        self.auth = auth
+        self.ps = 100
 
-    def get(self, path, key, parser):
-        pagesize = 100
+    @property
+    def pagesize(self):
+        return min(max(self.ps, 10), 500)
+
+    @pagesize.setter
+    def pagesize(self, val):
+        if val < 10 or val > 500:
+            raise ValueError('pagesize must be between 10 and 500, inclusive')
+        self.ps = val
+
+    def get(self, path, key, parser, *, params=None):
+        pagesize = self.pagesize
         done = 0
+        params = params or {}
         for page in count(1):
             res = requests.get(
                 f'{self.url}/api/{path}',
-                params={'ps': pagesize, 'p': page},
+                params={**params, 'ps': pagesize, 'p': page},
                 auth=self.auth
             )
             res = res.json()
@@ -35,12 +47,14 @@ class API:
     def projects(self):
         yield from self.get('projects/search', 'components', lambda x: x['key'])
 
-    def issues(self, **params):
-        yield from self.get('issues/search', 'issues', lambda x: x)
+    def issues(self, *, project=None):
+        params = {}
+        if project is not None:
+            params['componentKeys'] = project
+        yield from self.get('issues/search', 'issues', lambda x: x, params=params)
 
 
 if __name__ == '__main__':
     api = API()
-    print('projects:', list(api.projects()))
-    print(len(list(api.issues())), 'issues')
+    print(list(api.projects()))
 
