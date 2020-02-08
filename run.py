@@ -7,25 +7,22 @@ Created on Thu Jan 30 18:23:47 2020
 """
 
 import GitRepo as grepo
-from guiObjects import *
+from UserInterface import UserInterface
 from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import shutil
-
-
-def cleanup(ui):
-    work_dir = ui.user_input_dir
-    if work_dir == './work':
-        shutil.rmtree(work_dir)
-
-
+import os
+    
+#will only be needed if the program crashed last time it was ran
+if os.path.isdir('./work'):
+    shutil.rmtree('./work')
+    
 app = QtWidgets.QApplication(sys.argv)
 main_window = QtWidgets.QMainWindow()
-ui = Ui_CodeAnalysisTool()
-ui.setupUi(main_window)
+ui = UserInterface(main_window)
 main_window.show()
 
-app.aboutToQuit.connect(lambda : cleanup(ui))
+app.aboutToQuit.connect(ui.cleanup)
 sys.exit(app.exec_())
 
 
