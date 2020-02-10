@@ -2,50 +2,73 @@ import docker
 import requests
 import time
 
+class SonarError(Exception):
+    def __init__(self, message="SonarError"):
+        self.message = message
 ##  Sonar
 #   @brief class for handling SonarQube and SonarScanner for Maven
 class Sonar:
 
     ##  The Constructor
-    def __init__(self):
+    #   @param host is ip adrress for the SonarQube server
+    #   @param port is port number for SonarQube server
+    #   @auth is login credentials for SonarQube server
+    def __init__(self, host='127.0.0.1', port=9000, auth=('admin', 'admin')):
         self.dockerClient = docker.from_env()
         self.sonarQubeContainer = None
         self.sonarQubeRunning = False
         self.sonarScannerContainer = None
+        self.host = host
+        self.port = port
+        self.url = "http://" + host + str(port)
+        self.auth = auth
 
     ##  startSonarQube
     #   @brief Method for starting sonarQube docker container
-    #   SonarQube server is not up yet after calling this method.
-    #   Use isSonarQubeRunning to check if it's up.
+    #   @returns SonarError if exceptions occured
+    #   SonarQube server is not necessarily responding after calling this
+    #   method returns. Use isSonarQubeRunning to check if it's up.
     def startSonarQube(self):
-        print("SonarQube is starting..")
-        if self.isSonarQubeRunning() is False:
-            self.sonarQubeContainer = self.dockerClient.containers.run(
-                "sonarqube",
-                detach=True,
-                name="sonarqube",
-                ports={'9000/tcp': 9000}
-            )
+        try:
+            print("SonarQube server is starting...")
+            if self.isSonarQubeRunning() is False:
+                self.sonarQubeContainer = self.dockerClient.containers.run(
+                    "sonarqube:latest",
+                    detach=True,
+                    ports={str(self.port) + '/tcp': self.port}
+                )
+            if self.sonarQubeContainer is None:
+                raise SonarError()
+        except (docker.errors.ContainerError, docker.errors.APIError, SonarError):
+            raise SonarError("Error occured while starting SonarQube server!")
 
     ##  stopSonarQube
     #   @brief Method for stopping SonarQube
-    #   Stops SonarQube docker container and removes it
+    #   @returns SonarError if errors
+    #   Stops SonarQube docker container and removes it. SonarQube server
+    #   docker container should be still stopped and removed even if errors
+    #   are returned.
     def stopSonarQube(self):
-        self.sonarQubeContainer.stop(timeout=3600)
-
-        while self.sonarQubeContainer.status != "exited":
-            self.sonarQubeContainer.reload()
-            time.sleep(1)
-        self.sonarQubeContainer.remove()
-        self.sonarQubeRunning = False
+        try:
+            self.sonarQubeContainer.stop(timeout=3600)
+            print("SonarQube server is stopping...")
+            while self.sonarQubeContainer.status != "exited":
+                self.sonarQubeContainer.reload()
+                time.sleep(1)
+            self.sonarQubeContainer.remove()
+            self.sonarQubeRunning = False
+            print("SonarQube server stopped and docker container removed.")
+        except (docker.errors.ContainerError, docker.errors.APIError, Exception) as e:
+            print("Error occured while stopping SonarQube server!")
 
     ##  isSonarQubeRunning
     #   @brief Method for checking if SonarQube server is up
-    #
     #   @returns True only when SonarQube server HTTP response is 200
-    def isSonarQubeRunning(self):
+    #   This method is for purpose of waiting until SonarQube server is up and
+    #   running.
+    def isSonarQubeRunning(self, url):
         try:
-            r = requests.head("http://127.0.0.1:9000")
+            r = requests.head(url)
             if r.status_code == 200:
                 self.sonarQubeRunning = True
                 return True
@@ -84,11 +107,20 @@ class Sonar:
 
 
 if __name__ == "__main__":
-	sonar = Sonar()
-	sonar.startSonarQube()
-	while sonar.isSonarQubeRunning() is False:
-		print(".", sep="", end="", flush=True)
-		time.sleep(2)
-	print("SonarQube is Up!")
-	input("Press any key to STOP")
-	#sonar.stopSonarQube()
+    auth_test = ('admin', 'admin')
+    url_test = '127.0.0.1'
+    port_test = 9000
+    sonar = Sonar(url_test, port_test, auth_test)
+    try:
+        sonar.startSonarQube()
+    except SonarError as e:
+        print(e.message)
+
+    """
+    while sonar.isSonarQubeRunning() is False:
+        print(".", sep="", end="", flush=True)
+        time.sleep(2)
+    print("SonarQube is Up!")
+    input("Press any key to STOP")
+    """
+# sonar.stopSonarQube()
