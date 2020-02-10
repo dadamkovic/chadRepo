@@ -99,7 +99,7 @@ class Sonar:
             mavenCommand = "mvn "
             for p in params:
                 mavenCommand += p + " "
-            mavenCommand += '-Dsonar.host.url=http://127.0.0.1:9000'
+            mavenCommand += '-Dsonar.host.url=' + self.url
             print(mavenCommand)
             self.sonarScannerContainer = self.dockerClient.containers.run(
                 self.sonarScannerImg,
