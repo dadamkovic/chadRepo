@@ -7,6 +7,7 @@ from time import sleep
 from GitRepo import GitRepo
 from Sonar import Sonar
 from sonarAPI import API
+from analysisParser import analysisParseList
 
 
 ## Wait for a predicate to be true
@@ -57,7 +58,7 @@ def main(args):
     issues = list(api.issues(project=project_key))
     issue_file = os.path.join(args.o,  git_dir + '_issues.csv')
     commit_file = os.path.join(args.o,  git_dir + '_commits.csv')
-    # TODO: parse and write to file
+    analysisParseList(issues, issue_file) # NOTE: NOT TESTED!   Parse and write to file
     # TODO: get commit data for each commit associated with an issue
     #           and write to file
     print(len(issues))

@@ -11,6 +11,15 @@ from copy import copy
 import GitRepo as grepo
 import shutil
 
+# For analysis
+import os
+from Sonar import Sonar
+from sonarAPI import API
+from analysisParser import analysisParseList
+
+# Could be moved to something like utils, if more functions like this are made
+from main import wait
+
 
 class RepoElements():
     def __init__(self):
@@ -46,6 +55,9 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.cs_save_dirsel.clicked.connect(lambda : self.docBrowser(1))
         self.pmd_save_dirsel.clicked.connect(lambda : self.docBrowser(2))
         self.repo_save_dirsel.clicked.connect(lambda : self.docBrowser(3))
+
+        # Buttons for running analyzers
+        self.run_sonar_button.clicked.connect(self.analyseSonar)
         
         #user clicked the repo submit button, repo gets downlaoded and default branch gets set
         self.git_repo_input_submit.clicked.connect(self.readRepoUrl)
@@ -157,6 +169,60 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.git_repo_input.setEnabled(False)
         self.git_repo_input_submit.setEnabled(False)
     
+    ## analyseSonar
+    #  @brief Takes parameters from GUI and runs the current(14.2.) main function with them
+    #  @details Literally copypasta from current(14.2.) main and changed command line parameters to the GUI ones.
+    #           NOTE: This could be done in a separate module to be used by both, main and GUI.
+    def analyseSonar(self):
+        # Start SonarQube and API for it
+        sonar = Sonar(sonarScannerImg='sonar-maven')
+        if not sonar.isSonarQubeRunning():
+            sonar.startSonarQube()
+        api = API()
+
+        # Get the active Git repo
+        repo_url = self.active_repo['url']
+        ok = self.active_repo['tools'].pull_repo_contents(repo_url)
+        assert ok
+        git_dir, *_ = os.path.basename(repo_url).rpartition('.git')
+
+        # Get the save dir and make the git path with it
+        save_dir = self.sonar_save_dir_input.text()
+        if os.path.isabs(save_dir):
+            git_full_path = os.path.join(save_dir, git_dir)
+        else:
+            git_full_path = os.path.join(os.getcwd(), save_dir, git_dir)
+        print('git_dir:', git_full_path)
+
+        wait('sonarqube', sonar.isSonarQubeRunning, timeout=5)
+
+        # Running Sonar scanner(with sanity check)
+        before = set(api.projects())
+        print(before)
+        sonar.runSonarScanner(git_full_path, 'clean', 'verify', 'sonar:sonar')
+
+        wait('analysis', lambda: before.symmetric_difference(api.projects()), timeout=1)
+
+        project_key = before.symmetric_difference(api.projects()).pop()
+        print('project_key:', project_key)
+
+        wait('issues', lambda: any(api.issues(project=project_key)), timeout=1)
+
+        # Get the issues from API, parse and save as csv
+        issues = list(api.issues(project=project_key))
+        issue_file = os.path.join(save_dir,  git_dir + '_issues.csv')
+        analysisParseList(issues, issue_file) # NOTE: NOT TESTED!   Parse and write to file
+
+        # Get the git commit data
+        commit_file = os.path.join(save_dir,  git_dir + '_commits.csv')
+        # TODO: get commit data for each commit associated with an issue
+        #           and write to file
+        print(len(issues))
+        print(issue_file)
+        print(commit_file)
+        api.delete_project(project_key)
+
+        # WARNING: The cleanup() doesn't stop SonarQube yet
     
     ##Used to switch between user views (repo, )
     #param[in] index Number representing the menu screen

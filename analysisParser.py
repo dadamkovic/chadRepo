@@ -5,18 +5,22 @@ from pandas import read_json, DataFrame
 from json import load
 
 ## analysisParse
-#  @brief Makes a CSV file from the JSON
-#  @param json_string The json as string
-#  NOTE: Doesn't select columns nor handle data in any way. If the json is read as a string in the program,
-#  this function should be updated.
-def analysisParse(json_string):
-    df = read_json(json_string, orient='index')
-    df.to_csv('analysis.csv')
+#  @brief Makes a CSV file from the pandas dataframe
+#  @param df        The pandas dataframe
+#  @param csv_name  Filename for output
+def analysisParse(df, csv_name):
+    # Select the columns and rename the ones with different names compared to what's asked
+    df = df[['project', 'creationDate', 'hash', 'type', 'component', 'severity', 'line', 'status', 'message', 'effort', 'debt', 'author']]
+    df = df.rename(columns={'project':'projectName', 'hash':'creationCommitHash', 'line':'startLine'})
+
+    # Save csv
+    df.to_csv(csv_name)
 
 ## analysisParseFile
-#  @brief Makes a CSV file from SonarQube JSON file
+#  @brief Makes json file into pandas dataframe and passes it to analysisParse()
 #  @param json_file The json as a .json file
-def analysisParseFile(json_file):
+#  @param csv_name  Filename for output
+def analysisParseFile(json_file, csv_name='analysis.csv'):
 
     # Open json file and load it
     with open(json_file) as f:
@@ -24,13 +28,23 @@ def analysisParseFile(json_file):
     
     # Get the issues from the json and make it into pandas dataframe
     df = DataFrame(df['issues'])
+    analysisParse(df, csv_name)
 
-    # Select the columns and rename the ones with different names compared to what's asked
-    df = df[['project', 'creationDate', 'hash', 'type', 'component', 'severity', 'line', 'status', 'message', 'effort', 'debt', 'author']]
-    df = df.rename(columns={'project':'projectName', 'hash':'creationCommitHash', 'line':'startLine'})
+## analysisParseList
+#  @brief Makes list into pandas dataframe and passes it to analysisParse()
+#  @param df_list   List with issues
+#  @param csv_name  Filename for output
+def analysisParseList(df_list, csv_name='analysis.csv'):
+    df = DataFrame(df_list)
+    analysisParse(df, csv_name)
 
-    # Save csv
-    df.to_csv('analysis.csv')
+## analysisParseJson
+#  @brief Makes json string into pandas dataframe and passes it to analysisParse()
+#  @param json_string   Issues in JSON string
+#  @param csv_name      Filename for output
+def analysisParseJson(json_string, csv_name='analysis.csv'):
+    df = read_json(json_string, orient='index')
+    analysisParse(df, csv_name)
 
 if __name__ == "__main__":
 
