@@ -3,7 +3,15 @@ import requests
 from itertools import count
 
 
+## Class for SonarQube web api
+# public api includes:
+#   - issues
+#   - projects
+#   - delete_project
 class API:
+    ##
+    # @param url Url of the running SonarQube instance
+    # @param auth Authorisation for the SonarQube instance
     def __init__(self, url='http://127.0.0.1:9000', auth=('admin', 'admin')):
         self.url = url
         self.auth = auth
@@ -37,16 +45,25 @@ class API:
             if done >= res['paging']['total']:
                 return
 
+    ## Delete existing project
+    # @param project_key Project to delete
+    # @returns whether the response was ok
     def delete_project(self, project_key):
         return requests.post(
             f'{self.url}/api/projects/delete',
             params={'project': project_key},
             auth=self.auth
-        )
+        ).ok
 
+    ## search project keys for all analysed projects
+    # @returns Generator of project keys as string
+    # @param auth Authorisation for the SonarQube instance
     def projects(self):
         yield from self.get('projects/search', 'components', lambda x: x['key'])
 
+    ## search issues for projects
+    # @param project The project key for which issues are wanted
+    # @returns Generator of issues
     def issues(self, *, project=None):
         params = {}
         if project is not None:
