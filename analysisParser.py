@@ -14,7 +14,7 @@ def analysisParse(df, csv_name):
     df = df.rename(columns={'project':'projectName', 'hash':'creationCommitHash', 'line':'startLine'})
 
     # Save csv
-    df.to_csv(csv_name)
+    df.to_csv(csv_name, index=False)
 
 ## analysisParseFile
 #  @brief Makes json file into pandas dataframe and passes it to analysisParse()

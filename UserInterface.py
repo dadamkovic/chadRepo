@@ -180,19 +180,13 @@ class UserInterface(Ui_CodeAnalysisTool):
             sonar.startSonarQube()
         api = API()
 
-        # Get the active Git repo
-        repo_url = self.active_repo['url']
-        ok = self.active_repo['tools'].pull_repo_contents(repo_url)
-        assert ok
-        git_dir, *_ = os.path.basename(repo_url).rpartition('.git')
-
         # Get the save dir and make the git path with it
         save_dir = self.sonar_save_dir_input.text()
         if os.path.isabs(save_dir):
-            git_full_path = os.path.join(save_dir, git_dir)
+            git_full_path = os.path.join(save_dir, active_repo['created_in'])
         else:
-            git_full_path = os.path.join(os.getcwd(), save_dir, git_dir)
-        print('git_dir:', git_full_path)
+            git_full_path = os.path.join(os.getcwd(), active_repo['created_in'])
+        print('active_repo['created_in']:', git_full_path)
 
         wait('sonarqube', sonar.isSonarQubeRunning, timeout=5)
 
@@ -210,11 +204,11 @@ class UserInterface(Ui_CodeAnalysisTool):
 
         # Get the issues from API, parse and save as csv
         issues = list(api.issues(project=project_key))
-        issue_file = os.path.join(save_dir,  git_dir + '_issues.csv')
+        issue_file = os.path.join(save_dir,  active_repo['created_in'] + '_issues.csv')
         analysisParseList(issues, issue_file) # NOTE: NOT TESTED!   Parse and write to file
 
         # Get the git commit data
-        commit_file = os.path.join(save_dir,  git_dir + '_commits.csv')
+        commit_file = os.path.join(save_dir,  active_repo['created_in'] + '_commits.csv')
         # TODO: get commit data for each commit associated with an issue
         #           and write to file
         print(len(issues))
