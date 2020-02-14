@@ -28,14 +28,14 @@ def wait(message, predicate, *, sleeptime=2, timeout=-1):
 
 
 def main(args):
-    sonar = Sonar(sonarScannerImg='sonar-maven')
+    sonar = Sonar()
     if not sonar.isSonarQubeRunning():
         sonar.startSonarQube()
     api = API()
-    git = GitRepo(args.o)
+    git_dir, *_ = os.path.basename(args.repo).rpartition('.git')
+    git = GitRepo(os.path.join(args.o, git_dir))
     ok = git.pull_repo_contents(args.repo)
     assert ok
-    git_dir, *_ = os.path.basename(args.repo).rpartition('.git')
     if os.path.isabs(args.o):
         git_full_path = os.path.join(args.o, git_dir)
     else:
@@ -58,10 +58,9 @@ def main(args):
     issues = list(api.issues(project=project_key))
     issue_file = os.path.join(args.o,  git_dir + '_issues.csv')
     commit_file = os.path.join(args.o,  git_dir + '_commits.csv')
-    analysisParseList(issues, issue_file) # NOTE: NOT TESTED!   Parse and write to file
+    analysisParseList(issues, issue_file)  # NOTE: NOT TESTED!   Parse and write to file
     # TODO: get commit data for each commit associated with an issue
     #           and write to file
-    print(len(issues))
     print(issue_file)
     print(commit_file)
     api.delete_project(project_key)
