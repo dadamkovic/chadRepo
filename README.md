@@ -1,4 +1,3 @@
-
 Alpha version of the Spint 1 software.
 
 Contains the GUI implementation core of the application. GUI specification file is only local to this and shouldn't 
@@ -7,7 +6,7 @@ end up in the final application.
 ----------------------------------------------
 QUICK INSTALL:
 
-1. python ./setup.py
+1. python setup.py
 
 ----------------------------------------------
 
