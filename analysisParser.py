@@ -3,7 +3,6 @@
 ##################################################################
 from pandas import read_json, DataFrame
 from json import load
-import os
 
 ## analysisParse
 #  @brief Makes a CSV file from the pandas dataframe
@@ -37,8 +36,7 @@ def analysisParseFile(json_file, csv_name='analysis.csv'):
 #  @param csv_name  Filename for output
 def analysisParseList(df_list, csv_name='analysis.csv'):
     df = DataFrame(df_list)
-    csv_path = os.path.join('results',csv_name)
-    analysisParse(df, csv_path)
+    analysisParse(df, csv_name)
 
 ## analysisParseJson
 #  @brief Makes json string into pandas dataframe and passes it to analysisParse()
@@ -46,24 +44,25 @@ def analysisParseList(df_list, csv_name='analysis.csv'):
 #  @param csv_name      Filename for output
 def analysisParseJson(json_string, csv_name='analysis.csv'):
     df = read_json(json_string, orient='index')
-    csv_path = os.path.join('results',csv_name)
-    analysisParse(df, csv_path)
+    analysisParse(df, csv_name)
 
 ## analysisParseGit
 #  @brief Takes the dict with git info and dumps it into .csv
 #  @param git_info      Dictionary with info
 #  @param csv_name      Filename for output
 def analysisParseGit(git_info, csv_name='analysis_git.csv'):
-    df = DataFrame(git_info, index=[0])
-    csv_path = os.path.join('results',csv_name)
-    df.to_csv(csv_path)
+    str_info = {}
+    for key in git_info.keys():
+        str_info[key] = str(git_info[key])
+
+    df = DataFrame(str_info, index=[0])
+    df.to_csv(csv_name)
 
 if __name__ == "__main__":
 
     # Reading a test json and reading it
     with open("proto_and_sample_data/data/proto_and_sample_data_data_commons-cli.sonar_data.json") as f:
         df = load(f)
-
     # Print the dataframe and make it into CSV
     df = DataFrame(df['issues'])
     df = df[['project', 'creationDate', 'hash', 'type', 'component', 'severity', 'line', 'status', 'message', 'effort', 'debt', 'author']]
