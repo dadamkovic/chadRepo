@@ -59,3 +59,10 @@ if __name__ == "__main__":
     # Reading a test json and reading it
     with open("proto_and_sample_data/data/proto_and_sample_data_data_commons-cli.sonar_data.json") as f:
         df = load(f)
+
+    # Print the dataframe and make it into CSV
+    df = DataFrame(df['issues'])
+    df = df[['project', 'creationDate', 'hash', 'type', 'component', 'severity', 'line', 'status', 'message', 'effort', 'debt', 'author']]
+    df = df.rename(columns={'project':'projectName', 'hash':'creationCommitHash', 'line':'startLine'})
+    print(df.loc[15])
+    df.to_csv('test.csv')
