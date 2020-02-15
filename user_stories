@@ -1,0 +1,12 @@
+User wants a tool that will help him analyse his Java code.
+
+User opens a terminal, starts a program that fetches his repo with Java code and analyses it.
+
+User starts a GUI application that fetches his repo with Java code and analyses it.
+
+User wants a tool that will create a .csv file with git information about analysed commits.
+
+User wants to be able to manipulate multiple repositories at the same time.
+
+User wants to define the folder for saving analyses output files and wants to pick the folder 
+where the repos will be saved after analysis.
