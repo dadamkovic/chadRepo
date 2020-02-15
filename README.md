@@ -5,6 +5,12 @@ Contains the GUI implementation core of the application. GUI specification file 
 end up in the final application.
 
 ----------------------------------------------
+QUICK INSTALL:
+
+1. python ./setup.py
+
+----------------------------------------------
+
 
 Sami specific info:
 
