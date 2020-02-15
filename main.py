@@ -7,7 +7,7 @@ from time import sleep
 from GitRepo import GitRepo
 from Sonar import Sonar
 from sonarAPI import API
-from analysisParser import analysisParseList
+from analysisParser import analysisParseList, analysisParseGit
 
 
 ## Wait for a predicate to be true
@@ -31,10 +31,11 @@ def main(args):
     sonar = Sonar()
     if not sonar.isSonarQubeRunning():
         sonar.startSonarQube()
+        print("SonarQube will be started. (This could take a while)")
     api = API()
     git_dir, *_ = os.path.basename(args.repo).rpartition('.git')
     git = GitRepo(os.path.join(args.o, git_dir))
-    ok = git.pull_repo_contents(args.repo)
+    ok = git.pullRepoContents(args.repo)
     assert ok
     if os.path.isabs(args.o):
         git_full_path = os.path.join(args.o, git_dir)
@@ -58,7 +59,11 @@ def main(args):
     issues = list(api.issues(project=project_key))
     issue_file = os.path.join(args.o,  git_dir + '_issues.csv')
     commit_file = os.path.join(args.o,  git_dir + '_commits.csv')
+    git_file = os.path.join(args.o,  git_dir + '_git.csv')
+    git_info = git.getCommitData()
+
     analysisParseList(issues, issue_file)  # NOTE: NOT TESTED!   Parse and write to file
+    analysisParseGit(git_info, git_file)
     # TODO: get commit data for each commit associated with an issue
     #           and write to file
     print(issue_file)
