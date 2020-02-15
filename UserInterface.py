@@ -3,8 +3,11 @@
 """
 Created on Sat Feb  8 14:29:58 2020
 
-@author: daniel
+@author: Daniel Adamkovic
 """
+##
+
+
 from qtGUIsetup import Ui_CodeAnalysisTool
 from PyQt5 import QtCore, QtGui, QtWidgets
 from copy import copy
@@ -21,12 +24,6 @@ from analysisParser import analysisParseList
 from main import wait
 
 
-class RepoElements():
-    def __init__(self):
-        self.repo_url = ""
-        
-
-
 class UserInterface(Ui_CodeAnalysisTool):
     def __init__(self,CodeAnalysisTool):
         super(UserInterface,self).__init__()
@@ -41,7 +38,9 @@ class UserInterface(Ui_CodeAnalysisTool):
         
     
     
-    ##Binds widgets to the methods that process inputs
+    ##
+    ## Binds widgets to the methods that process inputs
+    ##
     def bindActiveWidgets(self):
         #events that change how the  active screeen changes
         self.repo_screen_butt.clicked.connect(lambda :self.menuScreenSel(0))
@@ -86,26 +85,28 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.repo_save_dir.setEnabled(not toggler)
         self.active_repo['keep'] = not toggler
         
-    ##called when user changes branches in the dropdown menu
+    ## @brief Called when user changes branches in the dropdown menu
     def switchBranch(self):
         if self.active_repo['tools'] == None:   #dont do anything if the branches arent loaded yet
             return
         
         new_branch = self.branch_selector.currentText()
-        self.active_repo['tools'].change_branch(new_branch)
+        self.active_repo['tools'].changeBranch(new_branch)
         self.active_repo['active_branch'] = new_branch
         #update info about the last commit in branch
-        commit_data = self.active_repo['tools'].get_commit_data()
+        commit_data = self.active_repo['tools'].getCommitData()
         info_text = self.prettyDict(commit_data)
         self.active_repo['data'] = info_text
         self.repo_info.setText(self.active_repo['data'])
         
-    ##Called when the user switches between the top tabs
-    #@param[in] repo_idx Index specifying which repo needs to be displayed
+    ##@brief Called when the user switches between the top tabs
+    # @param repo_idx Index specifying which repo needs to be displayed
     def switchRepoContext(self, repo_idx):
+        
         #we copy the current active repo into the correct repo memory slot
         #this might not be needed since I can just bind the memory togetger but this 
         #explicit way is clearer
+        
         self.repo_list[self.active_repo['idx']] = copy(self.active_repo) 
         self.active_repo = copy(self.repo_list[repo_idx])
         
@@ -117,6 +118,7 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.git_repo_input.setText(self.active_repo['url'])
             self.repo_info.setText(self.active_repo['data'])
             self.branch_selector.setCurrentText(self.active_repo['active_branch'])
+        
         #clear uninitialized widgets
         else:
             self.git_repo_input.setEnabled(True)
@@ -137,23 +139,25 @@ class UserInterface(Ui_CodeAnalysisTool):
         else:
             self.repo_save_dir.setText("")
         
-    ##Gets called only once for every repository
-    #Currently it is not possible to load a different repository once we load something
+    ## @brief Gets called only once for every repository
+    #  Currently it is not possible to load a different repository once we load something
     def readRepoUrl(self):
         
         self.active_repo['url'] = self.git_repo_input.text()
         self.active_repo['save_dir'] = self.repo_save_dir.text()
         
+        #if we specified custom save dir
         if self.active_repo['save_dir'] == '':
             self.active_repo['save_dir'] = './work/repo{}'.format(self.active_repo['idx'])
         self.active_repo['created_in'] = self.active_repo['save_dir']
             
+        #create instance of git repo
         git_repo = grepo.GitRepo(self.active_repo['save_dir'])
         self.active_repo['tools'] = git_repo
         
-        self.active_repo['tools'].pull_repo_contents(self.active_repo['url'])
+        self.active_repo['tools'].pullRepoContents(self.active_repo['url'])
         
-        commit_data = self.active_repo['tools'].get_commit_data()
+        commit_data = self.active_repo['tools'].getCommitData()
         info_text = self.prettyDict(commit_data)
         self.active_repo['data'] = info_text
         self.repo_info.setText(self.active_repo['data'])
@@ -218,12 +222,12 @@ class UserInterface(Ui_CodeAnalysisTool):
 
         # WARNING: The cleanup() doesn't stop SonarQube yet
     
-    ##Used to switch between user views (repo, )
-    #param[in] index Number representing the menu screen
+    ## @brief Used to switch between user views (repo, )
+    #  @param index Number representing the menu screen
     def menuScreenSel(self,index):
         self.stackedWidget.setCurrentIndex(index)
         
-    ##Initializes the repo list 
+    ## @brief Initializes the repo list 
     def _default_repo_setup(self):
         repo_list = []
         for num in range(6):
@@ -243,7 +247,8 @@ class UserInterface(Ui_CodeAnalysisTool):
         active_repo['idx'] = 0
         return repo_list[:-1], active_repo
     
-    ##calls standard document browser and sets the info field with the chosen path
+    ## @briefCalls Standard document browser and sets the info field with the chosen path
+    #  @param idx Index determines where the data loaded will be saved
     def docBrowser(self,idx):
         folder = str(QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, "Select Directory"))        
         if idx == 0:
@@ -257,8 +262,9 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.active_repo['save_dir'] = folder
             
         
-    ##Used to print dict contents into information field in a resonably nice way
-    #@note could probably just be used as private method
+    ## @brief Used to print dict contents into information field in a resonably nice way
+    #  @param some_dict Any dictionary to be 'prettyfied'
+    #  @note could probably just be used as private method
     def prettyDict(self,some_dict):
         output = ''
         for key, item in some_dict.items():
