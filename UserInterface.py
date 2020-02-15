@@ -29,10 +29,10 @@ class UserInterface(Ui_CodeAnalysisTool):
         super(UserInterface,self).__init__()
         self.setupUi(CodeAnalysisTool)
 
-        #these will hold information about repos, also declares self.active_repo
+        # these will hold information about repos, also declares self.active_repo
         self.repo_list, self.active_repo = self._default_repo_setup()
 
-        #binds widgets to functions
+        # binds widgets to functions
         self.bindActiveWidgets()
 
 
@@ -42,14 +42,14 @@ class UserInterface(Ui_CodeAnalysisTool):
     ## Binds widgets to the methods that process inputs
     ##
     def bindActiveWidgets(self):
-        #events that change how the  active screeen changes
+        # events that change how the  active screeen changes
         self.repo_screen_butt.clicked.connect(lambda :self.menuScreenSel(0))
         self.sonar_screen_butt.clicked.connect(lambda :self.menuScreenSel(1))
         self.cs_screen_butt.clicked.connect(lambda :self.menuScreenSel(2))
         self.pmd_screen_butt.clicked.connect(lambda :self.menuScreenSel(3))
         self.settings_screen_butt.clicked.connect(lambda :self.menuScreenSel(4))
 
-        #all bellow are buttons for folder selection
+        # all bellow are buttons for folder selection
         self.sonar_save_dirsel.clicked.connect(lambda : self.docBrowser(0))
         self.cs_save_dirsel.clicked.connect(lambda : self.docBrowser(1))
         self.pmd_save_dirsel.clicked.connect(lambda : self.docBrowser(2))
@@ -58,26 +58,26 @@ class UserInterface(Ui_CodeAnalysisTool):
         # Buttons for running analyzers
         self.run_sonar_button.clicked.connect(self.analyseSonar)
 
-        #user clicked the repo submit button, repo gets downlaoded and default branch gets set
+        # user clicked the repo submit button, repo gets downlaoded and default branch gets set
         self.git_repo_input_submit.clicked.connect(self.readRepoUrl)
 
-        #enables user input box and folder sel button at the same time
+        # enables user input box and folder sel button at the same time
         self.repo_save_enable_butt.toggled.connect(self._enableSave)
 
-        #switching repos
+        # switching repos
         self.tabWidget.currentChanged.connect(lambda : self.switchRepoContext(self.tabWidget.currentIndex()))
 
-        #triggered if user selects different branch
+        # triggered if user selects different branch
         self.branch_selector.currentTextChanged.connect(self.switchBranch)
 
         self.repo_save_dir.textChanged.connect(self._updateSaveDir)
         print("Init complete")
 
-    #every time user types into the input field this gets updated
+    # every time user types into the input field this gets updated
     def _updateSaveDir(self):
         self.active_repo['save_dir'] = self.repo_save_dir.text()
 
-    ##when user switches saving on or off we want to track it and change stuff
+    ## when user switches saving on or off we want to track it and change stuff
     def _enableSave(self):
         toggler = self.active_repo['keep']
         self.repo_save_enable_butt.setEnabled(not toggler)
@@ -87,13 +87,13 @@ class UserInterface(Ui_CodeAnalysisTool):
 
     ## @brief Called when user changes branches in the dropdown menu
     def switchBranch(self):
-        if self.active_repo['tools'] == None:   #dont do anything if the branches arent loaded yet
+        if self.active_repo['tools'] == None:   # dont do anything if the branches arent loaded yet
             return
 
         new_branch = self.branch_selector.currentText()
         self.active_repo['tools'].changeBranch(new_branch)
         self.active_repo['active_branch'] = new_branch
-        #update info about the last commit in branch
+        # update info about the last commit in branch
         commit_data = self.active_repo['tools'].getCommitData()
         info_text = self.prettyDict(commit_data)
         self.active_repo['data'] = info_text
@@ -103,14 +103,14 @@ class UserInterface(Ui_CodeAnalysisTool):
     # @param repo_idx Index specifying which repo needs to be displayed
     def switchRepoContext(self, repo_idx):
 
-        #we copy the current active repo into the correct repo memory slot
-        #this might not be needed since I can just bind the memory togetger but this
-        #explicit way is clearer
+        # we copy the current active repo into the correct repo memory slot
+        # this might not be needed since I can just bind the memory togetger but this
+        # explicit way is clearer
 
         self.repo_list[self.active_repo['idx']] = copy(self.active_repo)
         self.active_repo = copy(self.repo_list[repo_idx])
 
-        #if the repo is already loaded lock repo url input and load values into widgets
+        # if the repo is already loaded lock repo url input and load values into widgets
         if self.active_repo['init'] :
             self.git_repo_input.setEnabled(False)
             self.git_repo_input_submit.setEnabled(False)
@@ -119,7 +119,7 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.repo_info.setText(self.active_repo['data'])
             self.branch_selector.setCurrentText(self.active_repo['active_branch'])
 
-        #clear uninitialized widgets
+        # clear uninitialized widgets
         else:
             self.git_repo_input.setEnabled(True)
             self.git_repo_input_submit.setEnabled(True)
@@ -127,13 +127,13 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.git_repo_input.setText("")
             self.repo_info.setText("")
 
-        #enables/disables save input as neccessary
+        # enables/disables save input as neccessary
         if self.active_repo['keep']:
             self.repo_save_dir.setEnabled(True)
         else:
             self.repo_save_dir.setEnabled(False)
 
-        #this can only be "" if we havent loaded anything in yet
+        # this can only be "" if we havent loaded anything in yet
         if self.active_repo['save_dir'] != "":
             self.repo_save_dir.setText(self.active_repo['save_dir'])
         else:
@@ -146,12 +146,12 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.active_repo['url'] = self.git_repo_input.text()
         self.active_repo['save_dir'] = self.repo_save_dir.text()
 
-        #if we specified custom save dir
+        # if we specified custom save dir
         if self.active_repo['save_dir'] == '':
             self.active_repo['save_dir'] = './work/repo{}'.format(self.active_repo['idx'])
         self.active_repo['created_in'] = self.active_repo['save_dir']
 
-        #create instance of git repo
+        # create instance of git repo
         git_repo = grepo.GitRepo(self.active_repo['save_dir'])
         self.active_repo['tools'] = git_repo
 
@@ -168,7 +168,7 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.branch_selector.setEnabled(True)
         self.label.setEnabled(True)
 
-        #user should NOT be able to change url of the repo after loading it
+        # user should NOT be able to change url of the repo after loading it
         self.active_repo['init'] = True
         self.git_repo_input.setEnabled(False)
         self.git_repo_input_submit.setEnabled(False)
@@ -232,16 +232,16 @@ class UserInterface(Ui_CodeAnalysisTool):
         repo_list = []
         for num in range(6):
             repo = {}
-            repo['init'] = False            #repo loaded
-            repo['keep'] = False            #save/not save
-            repo['url'] = ""                #repo url
-            repo['branches'] = ""           #all branches
-            repo['active_branch'] = ""      #currently selected branch
-            repo['save_dir'] = ""           #holds where to save the repo
-            repo['data'] = ""               #string info about the branch
-            repo['tools'] = None            #holds git repo class instance
-            repo['idx'] = num               #index of the repo
-            repo['created_in'] = ""         #if this and save_dir are different contents may have to be copied before exit
+            repo['init'] = False            # repo loaded
+            repo['keep'] = False            # save/not save
+            repo['url'] = ""                # repo url
+            repo['branches'] = ""           # all branches
+            repo['active_branch'] = ""      # currently selected branch
+            repo['save_dir'] = ""           # holds where to save the repo
+            repo['data'] = ""               # string info about the branch
+            repo['tools'] = None            # holds git repo class instance
+            repo['idx'] = num               # index of the repo
+            repo['created_in'] = ""         # if this and save_dir are different contents may have to be copied before exit
             repo_list.append(repo)
         active_repo = repo_list[-1]
         active_repo['idx'] = 0
@@ -271,7 +271,7 @@ class UserInterface(Ui_CodeAnalysisTool):
             output += str(key) + " : " + str(item) + "\n"
         return output
 
-    ##Runs on exit and cleans workspace
+    ## Runs on exit and cleans workspace
     def cleanup(self):
         self.repo_list[self.active_repo['idx']] = self.active_repo
         for item in self.repo_list:

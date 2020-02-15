@@ -13,7 +13,7 @@ import sys
 import shutil
 import os
 
-#will only be needed if the program crashed last time it was ran
+# will only be needed if the program crashed last time it was ran
 if os.path.isdir('./work'):
     shutil.rmtree('./work')
 

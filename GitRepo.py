@@ -33,7 +33,7 @@ class GitRepo():
     #  protected it will request user input (password can also be specified as input arg).
     def pullRepoContents(self,remote_url=None,username=None,password=None):
         try:
-			#testing the url for validity
+			# testing the url for validity
             self._repoUrlTest(remote_url)
         except UrlException as exc:
             print(exc)
@@ -43,16 +43,16 @@ class GitRepo():
         try:
             filled_repo = git.Repo.clone_from(self.repo_url,self.work_dir)
 
-		#if we enter exception we have tried to pull private repo or supplied bad path
+		# if we enter exception we have tried to pull private repo or supplied bad path
         except git.cmd.CommandError:
 			
             print("ERROR directory " + self.repo_url + " exists and not empty/pass protected git")
-			#add username and pass to the remote url
+			# add username and pass to the remote url
             unlocked_url = self._getPass(self.repo_url,username,password)
             print("Trying to unlock")
             filled_repo = git.Repo.clone_from(unlocked_url,self.work_dir)
 
-        self.filled_repo = filled_repo      #save the created repo information
+        self.filled_repo = filled_repo      # save the created repo information
         return True
 
     ## @brief Returns the dictionary with all the neccessary information
@@ -129,7 +129,7 @@ class WrongUrlFormat(UrlException):
 
 if __name__ == "__main__":
     com_inf = []
-	#wont work if we try to init what is already existent
+	# wont work if we try to init what is already existent
     if(os.path.isdir(curr_work_dir)):
         shutil.rmtree(curr_work_dir)
     repo_instance =  GitRepo(curr_work_dir)
