@@ -22,15 +22,19 @@ class GitRepo():
     def __init__(self,work_dir=curr_work_dir):
         self.work_dir = work_dir
     
-    ## @param[in] remote_url Reporsitory url (by default this is None)
-    # @returns True if repo pulled successfuly, False otherwise
+    ## @brief Downloads the repo contents
+	#  @param remote_url Reporsitory url (by default this is None)
+	#  @param username Needed in case of pass protected repo
+    #  @param password Needed in case of pass protected repo
+    #  @returns True if repo pulled successfuly, False otherwise
     #
-    # The method will check if the repostitory is in valid format and create workRepo
-    # with contents of the user specified directory. If the repo is password
-    # protected it will request user input (password can also be specified as input arg).
-    def pull_repo_contents(self,remote_url=None,username=None,password=None):
+    #  The method will check if the repostitory is in valid format and create workRepo
+    #  with contents of the user specified directory. If the repo is password
+    #  protected it will request user input (password can also be specified as input arg).
+    def pullRepoContents(self,remote_url=None,username=None,password=None):
         try:
-            self._repo_url_test(remote_url)     #testing the url fo
+			#testing the url for validity
+            self._repoUrlTest(remote_url)     
         except UrlException as exc:
             print(exc)
             return False
@@ -38,17 +42,22 @@ class GitRepo():
 
         try:
             filled_repo = git.Repo.clone_from(self.repo_url,self.work_dir)
-        except git.cmd.CommandError:    #if we enter exception we have tried to pull private repo                     
-            print("Pass protected git")
-            unlocked_url = self._get_pass(self.repo_url,username,password)    #add username and pass to the remote url
+
+		#if we enter exception we have tried to pull private repo or supplied bad path        
+        except git.cmd.CommandError:    
+			                     
+            print("ERROR directory " + self.repo_url + " exists and not empty/pass protected git")
+			#add username and pass to the remote url
+            unlocked_url = self._getPass(self.repo_url,username,password)  
+            print("Trying to unlock")  
             filled_repo = git.Repo.clone_from(unlocked_url,self.work_dir)
                                              
         self.filled_repo = filled_repo      #save the created repo information
         return True
     
-    ## Returns the dictionary with all the neccessary information
-    #  @note Merge allways returns empty list because I don't know what else to do there 
-    def get_commit_data(self):    
+    ## @brief Returns the dictionary with all the neccessary information
+    #  @note  Merge allways returns empty list because I don't know what else to do there 
+    def getCommitData(self):    
         commit_info = {}
         self.commit_handle = self.filled_repo.head.commit
         time_struct = time.gmtime()
@@ -75,16 +84,16 @@ class GitRepo():
         return commit_info
     
     ## @param[in] branch Name of the branch that you want to switch to
-    #  @see get_branches() method
-    def change_branch(self,branch):
-        if(branch not in self.get_branches()):
+    #  @see getBranches() method
+    def changeBranch(self,branch):
+        if(branch not in self.getBranches()):
             return False
         else:
             self.filled_repo.git.checkout(branch)
             return True
     
     ## Returns the list of all banches in the repo
-    def get_branches(self):
+    def getBranches(self):
         self.branches = [n.name.split('/')[-1] for n in self.filled_repo.remotes.origin.refs]
         return self.branches
     
@@ -93,7 +102,7 @@ class GitRepo():
     #  @param[in] password Either None or password supplied from the method call
     #  @return new_url Modified url that contains password and username reference
     #  Placeholder method that should be replaced with a nicer call
-    def _get_pass(self,locked_url,username,password):
+    def _getPass(self,locked_url,username,password):
         if(username == None):
             username = input("Your username: ")
         if(password == None):
@@ -104,7 +113,7 @@ class GitRepo():
         
     ## @param[in] remote_url Reporsitory url, username and pass info will be added to this
     #  Raises an exception if there is something wrong with the url
-    def _repo_url_test(self,remote_url):
+    def _repoUrlTest(self,remote_url):
         if remote_url == None:
             raise NoUrlSpecified('You need to specify repository URL')
         if (type(remote_url) != str) or (not remote_url.endswith('.git')):    
@@ -120,12 +129,13 @@ class WrongUrlFormat(UrlException):
 
 if __name__ == "__main__":
     com_inf = []
-    if(os.path.isdir("/home/daniel/randomRepo")):       #wont work if we try to init what is already existent
-        shutil.rmtree('/home/daniel/randomRepo')
-    repo_instance =  GitRepo('/home/daniel/randomRepo')
-    repo_instance.pull_repo_contents('https://github.com/apache/commons-cli.git')   #contents not in the dir
-    com_inf.append(repo_instance.get_commit_data())
-    if repo_instance.change_branch(com_inf[0]['branches'][0]):
+	#wont work if we try to init what is already existent
+    if(os.path.isdir(curr_work_dir)):      
+        shutil.rmtree(curr_work_dir)
+    repo_instance =  GitRepo(curr_work_dir)
+    repo_instance.pullRepoContents('https://github.com/apache/commons-cli.git')   
+    com_inf.append(repo_instance.getCommitData())
+    if repo_instance.changeBranch(com_inf[0]['branches'][0]):
         print("Success!")
-        com_inf.append(repo_instance.get_commit_data())
+        com_inf.append(repo_instance.getCommitData())
         
