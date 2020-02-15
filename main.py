@@ -58,16 +58,11 @@ def main(args):
 
     issues = list(api.issues(project=project_key))
     issue_file = os.path.join(args.o,  git_dir + '_issues.csv')
-    commit_file = os.path.join(args.o,  git_dir + '_commits.csv')
     git_file = os.path.join(args.o,  git_dir + '_git.csv')
     git_info = git.getCommitData()
 
     analysisParseList(issues, issue_file)  # NOTE: NOT TESTED!   Parse and write to file
     analysisParseGit(git_info, git_file)
-    # TODO: get commit data for each commit associated with an issue
-    #           and write to file
-    print(issue_file)
-    print(commit_file)
     api.delete_project(project_key)
 
 
