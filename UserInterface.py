@@ -28,16 +28,16 @@ class UserInterface(Ui_CodeAnalysisTool):
     def __init__(self,CodeAnalysisTool):
         super(UserInterface,self).__init__()
         self.setupUi(CodeAnalysisTool)
-        
+
         #these will hold information about repos, also declares self.active_repo
         self.repo_list, self.active_repo = self._default_repo_setup()
 
         #binds widgets to functions
         self.bindActiveWidgets()
-        
-        
-    
-    
+
+
+
+
     ##
     ## Binds widgets to the methods that process inputs
     ##
@@ -48,7 +48,7 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.cs_screen_butt.clicked.connect(lambda :self.menuScreenSel(2))
         self.pmd_screen_butt.clicked.connect(lambda :self.menuScreenSel(3))
         self.settings_screen_butt.clicked.connect(lambda :self.menuScreenSel(4))
-        
+
         #all bellow are buttons for folder selection
         self.sonar_save_dirsel.clicked.connect(lambda : self.docBrowser(0))
         self.cs_save_dirsel.clicked.connect(lambda : self.docBrowser(1))
@@ -57,26 +57,26 @@ class UserInterface(Ui_CodeAnalysisTool):
 
         # Buttons for running analyzers
         self.run_sonar_button.clicked.connect(self.analyseSonar)
-        
+
         #user clicked the repo submit button, repo gets downlaoded and default branch gets set
         self.git_repo_input_submit.clicked.connect(self.readRepoUrl)
-        
+
         #enables user input box and folder sel button at the same time
         self.repo_save_enable_butt.toggled.connect(self._enableSave)
-        
+
         #switching repos
         self.tabWidget.currentChanged.connect(lambda : self.switchRepoContext(self.tabWidget.currentIndex()))
-        
+
         #triggered if user selects different branch
         self.branch_selector.currentTextChanged.connect(self.switchBranch)
-        
+
         self.repo_save_dir.textChanged.connect(self._updateSaveDir)
         print("Init complete")
-        
+
     #every time user types into the input field this gets updated
     def _updateSaveDir(self):
         self.active_repo['save_dir'] = self.repo_save_dir.text()
-    
+
     ##when user switches saving on or off we want to track it and change stuff
     def _enableSave(self):
         toggler = self.active_repo['keep']
@@ -84,12 +84,12 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.repo_save_dirsel.setEnabled(not toggler)
         self.repo_save_dir.setEnabled(not toggler)
         self.active_repo['keep'] = not toggler
-        
+
     ## @brief Called when user changes branches in the dropdown menu
     def switchBranch(self):
         if self.active_repo['tools'] == None:   #dont do anything if the branches arent loaded yet
             return
-        
+
         new_branch = self.branch_selector.currentText()
         self.active_repo['tools'].changeBranch(new_branch)
         self.active_repo['active_branch'] = new_branch
@@ -98,18 +98,18 @@ class UserInterface(Ui_CodeAnalysisTool):
         info_text = self.prettyDict(commit_data)
         self.active_repo['data'] = info_text
         self.repo_info.setText(self.active_repo['data'])
-        
+
     ##@brief Called when the user switches between the top tabs
     # @param repo_idx Index specifying which repo needs to be displayed
     def switchRepoContext(self, repo_idx):
-        
+
         #we copy the current active repo into the correct repo memory slot
-        #this might not be needed since I can just bind the memory togetger but this 
+        #this might not be needed since I can just bind the memory togetger but this
         #explicit way is clearer
-        
-        self.repo_list[self.active_repo['idx']] = copy(self.active_repo) 
+
+        self.repo_list[self.active_repo['idx']] = copy(self.active_repo)
         self.active_repo = copy(self.repo_list[repo_idx])
-        
+
         #if the repo is already loaded lock repo url input and load values into widgets
         if self.active_repo['init'] :
             self.git_repo_input.setEnabled(False)
@@ -118,7 +118,7 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.git_repo_input.setText(self.active_repo['url'])
             self.repo_info.setText(self.active_repo['data'])
             self.branch_selector.setCurrentText(self.active_repo['active_branch'])
-        
+
         #clear uninitialized widgets
         else:
             self.git_repo_input.setEnabled(True)
@@ -126,53 +126,53 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.branch_selector.clear()
             self.git_repo_input.setText("")
             self.repo_info.setText("")
-            
+
         #enables/disables save input as neccessary
         if self.active_repo['keep']:
             self.repo_save_dir.setEnabled(True)
         else:
             self.repo_save_dir.setEnabled(False)
-        
+
         #this can only be "" if we havent loaded anything in yet
         if self.active_repo['save_dir'] != "":
             self.repo_save_dir.setText(self.active_repo['save_dir'])
         else:
             self.repo_save_dir.setText("")
-        
+
     ## @brief Gets called only once for every repository
     #  Currently it is not possible to load a different repository once we load something
     def readRepoUrl(self):
-        
+
         self.active_repo['url'] = self.git_repo_input.text()
         self.active_repo['save_dir'] = self.repo_save_dir.text()
-        
+
         #if we specified custom save dir
         if self.active_repo['save_dir'] == '':
             self.active_repo['save_dir'] = './work/repo{}'.format(self.active_repo['idx'])
         self.active_repo['created_in'] = self.active_repo['save_dir']
-            
+
         #create instance of git repo
         git_repo = grepo.GitRepo(self.active_repo['save_dir'])
         self.active_repo['tools'] = git_repo
-        
+
         self.active_repo['tools'].pullRepoContents(self.active_repo['url'])
-        
+
         commit_data = self.active_repo['tools'].getCommitData()
         info_text = self.prettyDict(commit_data)
         self.active_repo['data'] = info_text
         self.repo_info.setText(self.active_repo['data'])
-        
+
         self.active_repo['branches'] = commit_data['branches']
         self.branch_selector.addItems(self.active_repo['branches'])
-        
+
         self.branch_selector.setEnabled(True)
         self.label.setEnabled(True)
-        
+
         #user should NOT be able to change url of the repo after loading it
         self.active_repo['init'] = True
         self.git_repo_input.setEnabled(False)
         self.git_repo_input_submit.setEnabled(False)
-    
+
     ## analyseSonar
     #  @brief Takes parameters from GUI and runs the current(14.2.) main function with them
     #  @details Literally copypasta from current(14.2.) main and changed command line parameters to the GUI ones.
@@ -221,13 +221,13 @@ class UserInterface(Ui_CodeAnalysisTool):
         api.delete_project(project_key)
 
         # WARNING: The cleanup() doesn't stop SonarQube yet
-    
+
     ## @brief Used to switch between user views (repo, )
     #  @param index Number representing the menu screen
     def menuScreenSel(self,index):
         self.stackedWidget.setCurrentIndex(index)
-        
-    ## @brief Initializes the repo list 
+
+    ## @brief Initializes the repo list
     def _default_repo_setup(self):
         repo_list = []
         for num in range(6):
@@ -246,22 +246,22 @@ class UserInterface(Ui_CodeAnalysisTool):
         active_repo = repo_list[-1]
         active_repo['idx'] = 0
         return repo_list[:-1], active_repo
-    
+
     ## @briefCalls Standard document browser and sets the info field with the chosen path
     #  @param idx Index determines where the data loaded will be saved
     def docBrowser(self,idx):
-        folder = str(QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, "Select Directory"))        
+        folder = str(QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, "Select Directory"))
         if idx == 0:
             self.sonar_save_dir_input.setText(folder)
-        elif idx == 1: 
+        elif idx == 1:
             self.cs_save_dir_input.setText(folder)
         elif idx == 2:
             self.pmd_save_dir_input.setText(folder)
         elif idx == 3:
             self.repo_save_dir.setText(folder)
             self.active_repo['save_dir'] = folder
-            
-        
+
+
     ## @brief Used to print dict contents into information field in a resonably nice way
     #  @param some_dict Any dictionary to be 'prettyfied'
     #  @note could probably just be used as private method
@@ -270,7 +270,7 @@ class UserInterface(Ui_CodeAnalysisTool):
         for key, item in some_dict.items():
             output += str(key) + " : " + str(item) + "\n"
         return output
-    
+
     ##Runs on exit and cleans workspace
     def cleanup(self):
         self.repo_list[self.active_repo['idx']] = self.active_repo
@@ -281,4 +281,4 @@ class UserInterface(Ui_CodeAnalysisTool):
                 print("Removed" + file_dir)
             elif file_dir != item['save_dir']:
                 shutil.move(item['created_in'],item['save_dir'])
-        
+

@@ -2142,7 +2142,7 @@ class Ui_CodeAnalysisTool(object):
         self.stackedWidget.setCurrentIndex(0)
         self.tabWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(CodeAnalysisTool)
-        
+
 
     def retranslateUi(self, CodeAnalysisTool):
         _translate = QtCore.QCoreApplication.translate

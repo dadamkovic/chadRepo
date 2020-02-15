@@ -25,7 +25,7 @@ def analysisParseFile(json_file, csv_name='analysis.csv'):
     # Open json file and load it
     with open(json_file) as f:
         df = load(f)
-    
+
     # Get the issues from the json and make it into pandas dataframe
     df = DataFrame(df['issues'])
     analysisParse(df, csv_name)

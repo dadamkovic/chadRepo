@@ -3,7 +3,7 @@ import sys
 import os
 
 
-##Will read file 
+##Will read file
 def installRequirements(req_file="requirements.txt"):
 	with open(req_file,"r") as fr:
 

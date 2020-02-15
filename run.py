@@ -12,11 +12,11 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import sys
 import shutil
 import os
-    
+
 #will only be needed if the program crashed last time it was ran
 if os.path.isdir('./work'):
     shutil.rmtree('./work')
-    
+
 app = QtWidgets.QApplication(sys.argv)
 main_window = QtWidgets.QMainWindow()
 ui = UserInterface(main_window)
