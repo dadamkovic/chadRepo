@@ -6,7 +6,7 @@
 
     ./main.py <url to git repo>
 
-# The example data is produuced by:
+# The example data is produced by:
 
     ./main.py https://github.com/jleetutorial/maven-project.git
 
