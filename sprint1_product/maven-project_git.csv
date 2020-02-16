@@ -1,0 +1,4 @@
+,project_id,hash,message,author,author_date,author_timezone,commiter,commiter_date,commiter_timezone,branches,in_main_branch,parents,merge
+0,maven-projec,0caf6111d5ef4679bf818f99fa448a525566ee69,"Merge pull request #14 from jleetutorial/jleetutorial-patch-1-1
+
+Update README.md",James Lee,2020-02-16T:15:03:21Z,0.0,GitHub,2017-11-18T:14:27:47Z,0.0,"['Jenkinsfile', 'add-tomcat-user-xml', 'jleetutorial-patch-1', 'jleetutorial-patch-1-1', 'master']",True,"['04c7a52eefdaa0207766ff4118b86dd415a85bd0', 'bbe5382e3ac8f63ab08e73f9735698b7bdaaad0d']",TRUE

@@ -1,0 +1,3 @@
+projectName,creationDate,creationCommitHash,type,component,severity,startLine,status,message,effort,debt,author
+com.example.maven-project:maven-project,2016-10-10T16:01:46+0000,2061e6b9748dc146b9ba82cc9ba9cce4,CODE_SMELL,com.example.maven-project:maven-project:server/src/main/java/com/example/Greeter.java,INFO,15,OPEN,Complete the task associated to this TODO comment.,,,jameleetutorial@gmail.com
+com.example.maven-project:maven-project,2016-09-24T09:07:06+0000,3d4748c9d71921755c31a8edbe66dd85,CODE_SMELL,com.example.maven-project:maven-project:server/src/main/java/com/example/Greeter.java,CRITICAL,11,OPEN,"Add a nested comment explaining why this method is empty, throw an UnsupportedOperationException or complete the implementation.",5min,5min,jameleetutorial@gmail.com
