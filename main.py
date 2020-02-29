@@ -8,7 +8,7 @@ import shutil
 from GitRepo import GitRepo
 from Sonar import Sonar
 from sonarAPI import API
-from analysisParser import analysisParseList, analysisParseGit
+from analysisParser import analysisParseList
 
 
 ## Wait for a predicate to be true
@@ -73,11 +73,10 @@ def main(args):
 
             issue_file = os.path.join(args.o,  git_dir + '_issues.csv')
             git_file = os.path.join(args.o,  git_dir + '_git.csv')
-            git_info = git.getCommitData()
 
             issues = api.issues(project=project_key)
             analysisParseList(issues, issue_file)  # NOTE: NOT TESTED!   Parse and write to file
-            analysisParseGit(git_info, git_file)
+            git.gitParse(git_file)                  # NOTE: NOT TESTED!
         finally:
             if scan_started:
                 if project_key is None:

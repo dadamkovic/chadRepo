@@ -46,18 +46,6 @@ def analysisParseJson(json_string, csv_name='analysis.csv'):
     df = read_json(json_string, orient='index')
     analysisParse(df, csv_name)
 
-## analysisParseGit
-#  @brief Takes the dict with git info and dumps it into .csv
-#  @param git_info      Dictionary with info
-#  @param csv_name      Filename for output
-def analysisParseGit(git_info, csv_name='analysis_git.csv'):
-    str_info = {}
-    for key in git_info.keys():
-        str_info[key] = str(git_info[key])
-
-    df = DataFrame(str_info, index=[0])
-    df.to_csv(csv_name)
-
 if __name__ == "__main__":
 
     # Reading a test json and reading it

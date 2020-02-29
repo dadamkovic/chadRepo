@@ -1,0 +1,8 @@
+[flake8]  
+ignore = E501  
+exclude =  
+        .git,  
+        documentation,
+		sprint1_product,
+		qtGUIsetup.py
+max-complexity = 16

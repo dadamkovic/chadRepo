@@ -58,14 +58,15 @@ class UserInterface(Ui_CodeAnalysisTool):
         # Buttons for running analyzers
         self.run_sonar_button.clicked.connect(self.analyseSonar)
 
-        # user clicked the repo submit button, repo gets downlaoded and default branch gets set
+        # repo submit button clicked, repo downlaoded and default branch set
         self.git_repo_input_submit.clicked.connect(self.readRepoUrl)
 
         # enables user input box and folder sel button at the same time
         self.repo_save_enable_butt.toggled.connect(self._enableSave)
 
         # switching repos
-        self.tabWidget.currentChanged.connect(lambda : self.switchRepoContext(self.tabWidget.currentIndex()))
+        self.tabWidget.currentChanged.connect(\
+                lambda : self.switchRepoContext(self.tabWidget.currentIndex()))
 
         # triggered if user selects different branch
         self.branch_selector.currentTextChanged.connect(self.switchBranch)
@@ -87,12 +88,14 @@ class UserInterface(Ui_CodeAnalysisTool):
 
     ## @brief Called when user changes branches in the dropdown menu
     def switchBranch(self):
-        if self.active_repo['tools'] == None:   # dont do anything if the branches arent loaded yet
+        # dont do anything if the branches arent loaded yet
+        if self.active_repo['tools'] == None:   
             return
 
         new_branch = self.branch_selector.currentText()
         self.active_repo['tools'].changeBranch(new_branch)
         self.active_repo['active_branch'] = new_branch
+        
         # update info about the last commit in branch
         commit_data = self.active_repo['tools'].getCommitData()
         info_text = self.prettyDict(commit_data)
@@ -103,21 +106,21 @@ class UserInterface(Ui_CodeAnalysisTool):
     # @param repo_idx Index specifying which repo needs to be displayed
     def switchRepoContext(self, repo_idx):
 
-        # we copy the current active repo into the correct repo memory slot
-        # this might not be needed since I can just bind the memory togetger but this
-        # explicit way is clearer
-
+        # copy the current active repo into the correct repo memory slot
+        # this might not be needed, but is a clean way of doing it
         self.repo_list[self.active_repo['idx']] = copy(self.active_repo)
         self.active_repo = copy(self.repo_list[repo_idx])
 
-        # if the repo is already loaded lock repo url input and load values into widgets
+        # if the repo is already loaded lock repo url input and load values
+        # into widgets
         if self.active_repo['init'] :
             self.git_repo_input.setEnabled(False)
             self.git_repo_input_submit.setEnabled(False)
             self.branch_selector.addItems(self.active_repo['branches'])
             self.git_repo_input.setText(self.active_repo['url'])
             self.repo_info.setText(self.active_repo['data'])
-            self.branch_selector.setCurrentText(self.active_repo['active_branch'])
+            self.branch_selector.setCurrentText(
+                    self.active_repo['active_branch'])
 
         # clear uninitialized widgets
         else:
@@ -140,7 +143,8 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.repo_save_dir.setText("")
 
     ## @brief Gets called only once for every repository
-    #  Currently it is not possible to load a different repository once we load something
+    #  Currently it is not possible to load a different repository 
+    #  once we load something
     def readRepoUrl(self):
 
         self.active_repo['url'] = self.git_repo_input.text()
@@ -148,7 +152,8 @@ class UserInterface(Ui_CodeAnalysisTool):
 
         # if we specified custom save dir
         if self.active_repo['save_dir'] == '':
-            self.active_repo['save_dir'] = './work/repo{}'.format(self.active_repo['idx'])
+            save_dir = './work/repo{}'.format(self.active_repo['idx'])
+            self.active_repo['save_dir'] = save_dir
         self.active_repo['created_in'] = self.active_repo['save_dir']
 
         # create instance of git repo
@@ -173,10 +178,11 @@ class UserInterface(Ui_CodeAnalysisTool):
         self.git_repo_input.setEnabled(False)
         self.git_repo_input_submit.setEnabled(False)
 
-    ## analyseSonar
-    #  @brief Takes parameters from GUI and runs the current(14.2.) main function with them
-    #  @details Literally copypasta from current(14.2.) main and changed command line parameters to the GUI ones.
-    #           NOTE: This could be done in a separate module to be used by both, main and GUI.
+
+    ##  @brief Takes parameters from GUI and runs main function with them
+    #  @details Literally copypasta from current(14.2.) main and changed\ 
+    #  command line parameters to the GUI ones.
+    #  @note Could be done in a separate module to be used by main and GUI
     def analyseSonar(self):
         # Start SonarQube and API for it
         sonar = Sonar(sonarScannerImg='sonar-maven')
@@ -232,6 +238,10 @@ class UserInterface(Ui_CodeAnalysisTool):
         repo_list = []
         for num in range(6):
             repo = {}
+            
+            # if this and save_dir are different contents have to be copied 
+            # before exit
+            repo['created_in'] = ""         
             repo['init'] = False            # repo loaded
             repo['keep'] = False            # save/not save
             repo['url'] = ""                # repo url
@@ -241,16 +251,17 @@ class UserInterface(Ui_CodeAnalysisTool):
             repo['data'] = ""               # string info about the branch
             repo['tools'] = None            # holds git repo class instance
             repo['idx'] = num               # index of the repo
-            repo['created_in'] = ""         # if this and save_dir are different contents may have to be copied before exit
+            
             repo_list.append(repo)
         active_repo = repo_list[-1]
         active_repo['idx'] = 0
         return repo_list[:-1], active_repo
 
-    ## @briefCalls Standard document browser and sets the info field with the chosen path
+    ## @brief Calls standard document browser and sets the info field
     #  @param idx Index determines where the data loaded will be saved
     def docBrowser(self,idx):
-        folder = str(QtWidgets.QFileDialog.getExistingDirectory(self.centralwidget, "Select Directory"))
+        folder = str(QtWidgets.QFileDialog.getExistingDirectory(\
+                            self.centralwidget, "Select Directory"))
         if idx == 0:
             self.sonar_save_dir_input.setText(folder)
         elif idx == 1:
@@ -262,7 +273,7 @@ class UserInterface(Ui_CodeAnalysisTool):
             self.active_repo['save_dir'] = folder
 
 
-    ## @brief Used to print dict contents into information field in a resonably nice way
+    ## @brief Used to  pretty print dict contents into information field
     #  @param some_dict Any dictionary to be 'prettyfied'
     #  @note could probably just be used as private method
     def prettyDict(self,some_dict):
