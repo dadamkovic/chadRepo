@@ -8,6 +8,7 @@ from itertools import count
 #   - issues
 #   - projects
 #   - delete_project
+#   - ready
 class API:
     ##
     # @param url Url of the running SonarQube instance
@@ -54,6 +55,16 @@ class API:
             params={'project': project_key},
             auth=self.auth
         ).ok
+
+    ## ready SonarQube is up and ready to use
+    # @returns True if the SonarQube instance is ready, False otherwise
+    def ready(self):
+        try:
+            res = requests.post(f'{self.url}/api/system/status', auth=self.auth).json()
+            return res['status'] == 'UP'
+        except Exception:
+            pass
+        return False
 
     ## search project keys for all analysed projects
     # @returns Generator of project keys as string

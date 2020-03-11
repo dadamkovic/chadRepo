@@ -1,6 +1,7 @@
 import docker
 import requests
 import time
+import sonarAPI
 
 class SonarError(Exception):
     def __init__(self, message="SonarError"):
@@ -23,12 +24,13 @@ class Sonar:
         self.sonarScannerImg = sonarScannerImg
         self.dockerClient = docker.from_env()
         self.sonarQubeContainer = None
-        self.sonarQubeRunning = False
+        self.sonarQubeRunning = False  # NOTE: never read; is this necessary?
         self.sonarScannerContainer = None
         self.host = host
         self.port = port
         self.url = 'http://' + host + ":" + str(port)
         self.auth = auth
+        self.api = sonarAPI.API(self.url)
 
     ##  startSonarQube
     #   @brief Method for starting sonarQube docker container
@@ -72,20 +74,12 @@ class Sonar:
 
     ##  isSonarQubeRunning
     #   @brief Method for checking if SonarQube server is up
-    #   @returns True only when SonarQube server HTTP response is 200
+    #   @returns True only when SonarQube server reports it is ready
     #   This method is for purpose of waiting until SonarQube server is up and
     #   running.
     def isSonarQubeRunning(self):
-        try:
-            r = requests.head(self.url)
-            if r.status_code == 200:
-                self.sonarQubeRunning = True
-                return True
-            else:
-                self.sonarQubeRunning = False
-                return False
-        except requests.ConnectionError:
-            return False
+        self.sonarQubeRunning = self.api.ready()
+        return self.sonarQubeRunning
 
     ##  runSonarScanner
     #   @brief Method for running SonarScanner for Maven.
